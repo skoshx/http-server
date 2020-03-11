@@ -1,14 +1,10 @@
-import { serve, ServerRequest } from 'https://deno.land/std@v0.35.0/http/server.ts';
+import { serve, Server, ServerRequest } from 'https://deno.land/std@v0.35.0/http/server.ts';
 import { resolve, normalize, join, relative } from 'https://deno.land/std@v0.35.0/path/posix.ts';
+import { open } from 'https://raw.githubusercontent.com/SkoshRG/deno-open/master/index.ts';
 // Hooks
 import { corsHook, authHook, logIpHook, logRequestHook } from './hooks.ts';
 // Encoder
 const Encoder = new TextEncoder()
-
-export interface HttpServerHeader {
-  headerName: string,
-  headerValue: string
-}
 
 export interface IResponse {
   status?: number;
@@ -95,6 +91,8 @@ export class HttpServer {
   
   private hooks: HookFunction[] = [];
 
+  public server!: Server;
+
   constructor(path?: string, options?: HttpServerOptions) {
     this.options = {...HttpServerDefaults, ...options};
     this.options.root = resolve(path ?? '');
@@ -120,8 +118,8 @@ export class HttpServer {
     // Requests go through a handler
     this.startServer(this.options);
     if (this.options.open) {
-      // TODO: Open in default web browsers
       const url = `${this.options.ssl ? 'https://' : 'http://'}${this.options.hostname}:${this.options.port}`;
+      open(url); // Open in default browser
     }
   }
 
@@ -133,9 +131,16 @@ export class HttpServer {
     this.hooks.push(fn);
   }
 
+  public stopServer(): void {
+    if (this.server) {
+      this.server.close();
+    }
+  }
+
   private async startServer(options: HttpServerOptions): Promise<boolean> {
-    const s = serve({ port: options.port, hostname: options.hostname });
-    for await (const req of s) {
+    // const s = serve({ port: options.port, hostname: options.hostname });
+    this.server = serve({ port: options.port, hostname: options.hostname });
+    for await (const req of this.server) {
       this.handleRequest(req)
     }
     return true;
@@ -152,8 +157,7 @@ export class HttpServer {
     }
   }
 
-  private getHeaders(headers: Headers, fileInfo?: Deno.FileInfo): Headers {
-    // if (fileInfo) headers.set("content-length", fileInfo.len.toString()); TODO:
+  private getHeaders(headers: Headers): Headers {
     headers.set("content-type", `${this.options.contentType}; charset=utf-8`);
     this.options.headers.forEach(header => {
       headers.set(header[0], header[1]);
@@ -179,11 +183,12 @@ export class HttpServer {
   }
   
   private async serveFile(filePath: string, request: ServerRequest, response: Response) {
-    const [file, fileInfo] = await Promise.all([Deno.open(filePath), Deno.stat(filePath)]);
+    // const [file, fileInfo] = await Promise.all([Deno.open(filePath), Deno.stat(filePath)]);
+    const file = await Deno.open(filePath);
     // TODO: Rewrite / Make cleaner
     response.status = 200
     response.body = file
-    response.headers = this.getHeaders(response.headers, fileInfo);
+    response.headers = this.getHeaders(response.headers);
     request.respond(response.get());
   }
 
@@ -193,7 +198,7 @@ export class HttpServer {
       const files: Deno.FileInfo[] = await Deno.readDir(filePath);
       const fileInfo = await Deno.stat(filePath);
       const html = this.generateHTMLForDirectory(dirUrl, files);
-      response.headers = this.getHeaders(response.headers, fileInfo);
+      response.headers = this.getHeaders(response.headers);
       response.status = 200;
       response.body = Encoder.encode(html);
       request.respond(response.get());
@@ -243,7 +248,7 @@ export class HttpServer {
    * Generates a HTML page for the 
    * @param files The files in the directory, returned by Deno.readDir
    */
-  private generateHTMLForDirectory(dirUrl: string, files: Deno.FileInfo[]) {
+  public generateHTMLForDirectory(dirUrl: string, files: Deno.FileInfo[]) {
     let filesHTML = '';
     for (let i = 0; i < files.length; i++) {
       const fileUrl = join(dirUrl, files[i].name ?? '');
@@ -254,6 +259,55 @@ export class HttpServer {
         <a href="${fileUrl}">${files[i].name}</a>
       </div>`;
     }
+    console.log(`
+    <!DOCTYPE html>
+    <html lang="en"${this.options.dark ? ' dark' : ''}>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Index of ${dirUrl}</title>
+      <style>
+      :root {
+        --primary-color: #fff;
+        --secondary-color: #222;
+      }
+      html[dark] {
+        --primary-color: #222;
+        --secondary-color: #fff;
+      }
+      /* Skeleton styles */
+      html {
+        -webkit-text-size-adjust: 100%;
+        box-sizing: border-box;
+        font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;
+        line-height: 1.5;
+        font-size: 62.5%;
+      }
+      body {
+        font-size: 1.5em;
+        line-height: 1.6;
+        font-weight: 400;
+        background-color: var(--primary-color);
+        color: var(--secondary-color);
+      }
+      a { color: dodgerblue; }
+      /* Styling for file list */
+      .file {
+        display: flex;
+        align-items: center;
+      }
+      .file > * {
+        margin-right: 2rem;
+      }
+      </style>
+    </head>
+    <body>
+      <h1>Index of ${dirUrl}</h1>
+      ${filesHTML.toString()}
+      <p>Deno v${Deno.version.deno} | <a href="https://todo.link.to.repo">http-server</a> running @ ${this.options.hostname}:${this.options.port}</p>
+    </body>
+    </html>
+    `);
     return `
     <!DOCTYPE html>
     <html lang="en"${this.options.dark ? ' dark' : ''}>
