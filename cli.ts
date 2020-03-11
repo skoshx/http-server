@@ -23,22 +23,22 @@ if (parsedArgs.help) {
     --help          Prints help information
     --port <PORT>   Set port
     --hostname <HOSTNAME> Set hostname
+    --open          Open browser on server start
+    --auth          Enable Basic HTTP Authentication
+    --username      Username for authentication
+    --password      Password for authentication
+    --dark          Dark mode
     --cors          Enable CORS via the 'Access-Control-Allow-Origin' header
+    --ssl           Enable HTTPS
+    --cert          SSL Certificate file path
+    --key           SSL Key file path
     --cache <CACHE> The amount of time for cache. -1 to disable caching.
     --dotFiles      Show dotfiles
     --dir           Show directories
     --autoIndex     Enable autoIndex
-    --open          Open browser on server start
     --extension     Default file extension. Defaults to html
     --contentType   Set the content type
-    --logIp         Log IP's of visitors
-    --ssl           Enable HTTPS
-    --cert          SSL Certificate file path
-    --key           SSL Key file path
-    --auth          Enable Basic HTTP Authentication
-    --username      Username for authentication
-    --password      Password for authentication
-    --dark          Dark mode`);
+    --logIp         Log IP's of visitors`);
   Deno.exit();
 }
 

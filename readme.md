@@ -13,7 +13,7 @@
 ## Install
 
 ```
-$ deno install script
+$ deno install --allow-net --allow-read --allow-run http-server https://deno.land/x/http-server.ts
 ```
 
 ###### Download

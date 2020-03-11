@@ -103,8 +103,7 @@ export class HttpServer {
     this.use(logRequestHook);
 
     if (this.options.cors) {
-      // Add CORS hook
-      this.use(corsHook);
+      this.use(corsHook); // Add CORS hook
     }
     if (this.options.logIp) {
       this.use(logIpHook);
@@ -116,13 +115,13 @@ export class HttpServer {
       if (!this.options.password || this.options.password === '') {
         throw Error('You cannot have authentication enabled with no password! Define it using the --password flag.');
       }
-      // Add authentication hook
-      this.use(authHook.bind(this));
+      this.use(authHook.bind(this)); // Add authentication hook
     }
     // Requests go through a handler
     this.startServer(this.options);
     if (this.options.open) {
-      // TODO: Open in default web browser
+      // TODO: Open in default web browsers
+      const url = `${this.options.ssl ? 'https://' : 'http://'}${this.options.hostname}:${this.options.port}`;
     }
   }
 
