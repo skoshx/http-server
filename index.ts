@@ -192,10 +192,24 @@ export class HttpServer {
     request.respond(response.get());
   }
 
+  /**
+   * Returns the Deno readdir function. Adds backward compatibility for Deno.readDir
+   */
+  private readDirWrapper(filePath: string) {
+    if (typeof Deno.readDir === 'function') {
+      return Deno.readDir(filePath)
+    } else {
+      // @ts-ignore
+      return Deno.readdir(filePath);
+    }
+
+  }
+
   private async serveDir(filePath: string, request: ServerRequest, response: Response) {
     try {
       const dirUrl = `/${relative(this.options.root, filePath)}`;
-      const files: Deno.FileInfo[] = await Deno.readDir(filePath);
+      // const files: Deno.FileInfo[] = await Deno.readDir(filePath);
+      const files: Deno.FileInfo[] = await this.readDirWrapper(filePath);
       const fileInfo = await Deno.stat(filePath);
       const html = this.generateHTMLForDirectory(dirUrl, files);
       response.headers = this.getHeaders(response.headers);
@@ -259,55 +273,6 @@ export class HttpServer {
         <a href="${fileUrl}">${files[i].name}</a>
       </div>`;
     }
-    console.log(`
-    <!DOCTYPE html>
-    <html lang="en"${this.options.dark ? ' dark' : ''}>
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Index of ${dirUrl}</title>
-      <style>
-      :root {
-        --primary-color: #fff;
-        --secondary-color: #222;
-      }
-      html[dark] {
-        --primary-color: #222;
-        --secondary-color: #fff;
-      }
-      /* Skeleton styles */
-      html {
-        -webkit-text-size-adjust: 100%;
-        box-sizing: border-box;
-        font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;
-        line-height: 1.5;
-        font-size: 62.5%;
-      }
-      body {
-        font-size: 1.5em;
-        line-height: 1.6;
-        font-weight: 400;
-        background-color: var(--primary-color);
-        color: var(--secondary-color);
-      }
-      a { color: dodgerblue; }
-      /* Styling for file list */
-      .file {
-        display: flex;
-        align-items: center;
-      }
-      .file > * {
-        margin-right: 2rem;
-      }
-      </style>
-    </head>
-    <body>
-      <h1>Index of ${dirUrl}</h1>
-      ${filesHTML.toString()}
-      <p>Deno v${Deno.version.deno} | <a href="https://todo.link.to.repo">http-server</a> running @ ${this.options.hostname}:${this.options.port}</p>
-    </body>
-    </html>
-    `);
     return `
     <!DOCTYPE html>
     <html lang="en"${this.options.dark ? ' dark' : ''}>
