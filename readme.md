@@ -18,7 +18,7 @@ $ deno install --allow-net --allow-read --allow-run http-server https://deno.lan
 
 ###### Download
 
-- [Normal](https://path.to.file)
+- [Normal](https://raw.githubusercontent.com/SkoshRG/http-server/master/index.ts)
 
 ## Usage
 
@@ -29,7 +29,7 @@ http-server --dark --root public
 ## Usage (Programmatic)
 
 ```js
-import { HttpServer } from 'https://deno.land/std@v0.35.0/fs/mod.ts';
+import { HttpServer } from 'https://raw.githubusercontent.com/SkoshRG/http-server/master/index.ts';
 
 const serverOptions = {
   port: 3000,

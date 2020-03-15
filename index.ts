@@ -318,7 +318,7 @@ export class HttpServer {
     <body>
       <h1>Index of ${dirUrl}</h1>
       ${filesHTML.toString()}
-      <p>Deno v${Deno.version.deno} | <a href="https://todo.link.to.repo">http-server</a> running @ ${this.options.hostname}:${this.options.port}</p>
+      <p>Deno v${Deno.version.deno} | <a href="https://github.com/SkoshRG/http-server">http-server</a> running @ ${this.options.hostname}:${this.options.port}</p>
     </body>
     </html>
     `;
