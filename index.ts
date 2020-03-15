@@ -1,6 +1,6 @@
 import { serve, Server, ServerRequest } from 'https://deno.land/std@v0.35.0/http/server.ts';
 import { resolve, normalize, join, relative } from 'https://deno.land/std@v0.35.0/path/posix.ts';
-import { open } from 'https://raw.githubusercontent.com/SkoshRG/deno-open/master/index.ts';
+import { open } from 'https://deno.land/x/open/index.ts';
 // Hooks
 import { corsHook, authHook, logIpHook, logRequestHook } from './hooks.ts';
 // Encoder

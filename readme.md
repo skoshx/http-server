@@ -13,13 +13,12 @@
 ## Install
 
 ```
-$ deno install --allow-net --allow-read --allow-run http-server https://deno.land/x/http-server.ts
+$ deno install --allow-net --allow-read --allow-run http-server https://deno.land/x/http-server/cli.ts
 ```
 
 ###### Download
 
 - [Normal](https://path.to.file)
-- [Minified](https://path.to.file)
 
 ## Usage
 
