@@ -29,7 +29,7 @@ http-server --dark --root public
 ## Usage (Programmatic)
 
 ```js
-import { HttpServer } from 'https://raw.githubusercontent.com/SkoshRG/http-server/master/index.ts';
+import { HttpServer } from 'https://raw.githubusercontent.com/skoshx/http-server/master/index.ts';
 
 const serverOptions = {
   port: 3000,
